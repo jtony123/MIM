@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class ControllerServlet extends HttpServlet {
 	public static String stopwordFile = "C:\\a_stopwords_repository\\stopwords.txt";
 	List<Document> documents = new ArrayList<Document>();
 	AVLTree<String> stopwordTree;
+	AVLTree<String> invertedIndex;
 
     /**
      * Default constructor. 
@@ -69,7 +71,7 @@ public class ControllerServlet extends HttpServlet {
         	documents.add(document);
         }
         
-        AVLTree<String> invertedIndex = new AVLTree<String> ();
+        invertedIndex = new AVLTree<String> ();
         for(Document document : documents){
         	for(String token : document.getDocumentTokens()){
         		invertedIndex.add(token);
@@ -127,9 +129,41 @@ public class ControllerServlet extends HttpServlet {
             			 d.put("url", doc.getFilePath());
             			 matchingDocs.add(d);
             		}
-            	}
-            	
+            	}            	
             }
+            
+            List<List> matchedPostingLists = new ArrayList<List>();
+            for(String queryTerm : termsArray){
+            	BinaryNodeInterface<String> node = invertedIndex.getNode(queryTerm);
+            	if(node != null){
+            		matchedPostingLists.add(node.getPostings());            		
+            	}
+            }
+            // TODO: need to sort the matchedPostingLists ascending in order of size of list.
+            
+            List<Integer> matchedDocs = new ArrayList<Integer>();
+            
+            for(int i=0,j=0;i<matchedPostingLists.get(0).size() && j < matchedPostingLists.get(1).size();++i,++j){
+            	if(matchedPostingLists.get(0).get(i) == matchedPostingLists.get(1).get(j)){
+            		matchedDocs.add((Integer) matchedPostingLists.get(0).get(i));
+            		++i;++j;
+            	} else {
+            		if(matchedPostingLists.get(0).get(i) == matchedPostingLists.get(1).get(j)){
+            			
+            		}
+            	}
+            }
+            
+            // intersect 1 and 2
+            
+            
+            // intersect matched with 3
+            
+            // intersect matched with 4, etc...
+            
+            
+            
+
             
             session.setAttribute("matchingDocs", matchingDocs);
             
