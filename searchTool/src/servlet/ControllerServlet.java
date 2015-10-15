@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import datastructures.AVLTree;
+import datastructures.BinaryNodeInterface;
 import fileprocessor.Document;
 import fileprocessor.DocumentProcessor;
 import fileprocessor.FilesReader;
@@ -58,10 +59,27 @@ public class ControllerServlet extends HttpServlet {
         File[] files = new File(repoUrl).listFiles();
 		// preprocess each file found
         for (int i = 0; i<files.length; ++i) {
+        	//Document document = new Document();
         	DocumentProcessor documentProcessor = new DocumentProcessor();
-        	documentProcessor.process(files[i], stopwordTree);
-        	documents.add(documentProcessor.getDocument());
-        }			
+        	//documentProcessor.getDocument().setDocumentId(new Integer(10));
+        	Document document = documentProcessor.processFile(files[i], stopwordTree);
+        	document.setDocumentId(i+1);
+        	
+        	System.out.println("doc id = " + document.getDocumentId());
+        	documents.add(document);
+        }
+        
+        AVLTree<String> invertedIndex = new AVLTree<String> ();
+        for(Document document : documents){
+        	for(String token : document.getDocumentTokens()){
+        		invertedIndex.add(token);
+        		BinaryNodeInterface<String> node = invertedIndex.getNode(token);
+        		node.getPostings().add(document.getDocumentId());
+        		node.incrementDocumentFrequency();       		
+        	}
+        }        
+        invertedIndex.inorderTraverse();
+        
 	}
 
 	/**
@@ -90,16 +108,19 @@ public class ControllerServlet extends HttpServlet {
         HttpSession session = request.getSession();
 		if (userPath.equals("/search")) {
 
-            String terms = request.getParameter("searchterms");
-            System.out.println("got these : "+terms);
-            String[] termsArray = terms.split("\\s");
+            String queryterms = request.getParameter("searchterms");
+            System.out.println("got these : "+queryterms);
+            
+            //String[] termsArray = queryterms.split("\\s");
+            DocumentProcessor documentProcessor = new DocumentProcessor();
+            String[] termsArray = documentProcessor.processQuery(queryterms);
             List<Map<String,String>> matchingDocs = new ArrayList<Map<String,String>>();
             
-            session.setAttribute("terms", terms);
+            session.setAttribute("terms", queryterms);
             
             for (Document doc : documents){
             	for (int i=0; i<termsArray.length; ++i){
-            		if(doc.getProcessedText().contains(termsArray[i].toLowerCase())){
+            		if(doc.getDocumentTokens().contains(termsArray[i].toLowerCase())){
             			
             			 Map<String,String> d = new HashMap<String, String>();
             			 d.put("name", doc.getDocumentName());

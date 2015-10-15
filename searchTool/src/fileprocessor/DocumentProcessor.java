@@ -5,39 +5,63 @@ import datastructures.AVLTree;
 
 public class DocumentProcessor {
 	
-	private Document document;
-
-	public Document getDocument() {
-		
-		return this.document;
-	}
+	//private Document document = new Document();
 	
-	public void process(File file, AVLTree<String> tree) {
+//	public DocumentProcessor(){
+//		document = new Document();
+//	}
 
-		// read in the file
-		FilesReader filesReader = new FilesReader();
-		filesReader.readFiles(file);
-		document = filesReader.getDocument();
+//	public Document getDocument() {
+//		
+//		return this.document;
+//	}
+	
+	public String[] processQuery(String query){
 		
-		System.out.println("Full text : " + document.getFullText());
-		String[] words = document.getFullText().split(",|'|\\.|\\s");
-		StringBuilder sb = new StringBuilder();
-		for(int i=0;i<words.length;++i){			
+		String[] terms = query.split(",|'|\\.|\\s");
+		for(int i=0;i<terms.length;++i){			
 			// Singularize and stem the words
 			Inflector inflector = new Inflector();	
 			Stemmer stemmer = new Stemmer();
 			//put everything in lowercase
-			words[i] = words[i].toLowerCase();
+			terms[i] = terms[i].toLowerCase();
 			
-			if(!tree.contains(words[i])){
-				String singularForm = inflector.singularize(words[i]);
+			String singularForm = inflector.singularize(terms[i]);
+			stemmer.add(singularForm);
+			terms[i] = stemmer.stem().toString();
+			stemmer.clear();			
+		}
+		return terms;
+	}
+	
+	public Document processFile(File file, AVLTree<String> tree) {
+		Document document = new Document();
+		// read in the file
+		FilesReader filesReader = new FilesReader();
+		filesReader.readFiles(file, document);
+		//document = filesReader.getDocument();
+		
+		System.out.println("Full text : " + document.getFullText());
+		String[] terms = document.getFullText().split(",|'|\\.|\\s");
+		//StringBuilder sb = new StringBuilder();
+		for(int i=0;i<terms.length;++i){			
+			// Singularize and stem the words
+			Inflector inflector = new Inflector();	
+			Stemmer stemmer = new Stemmer();
+			//put everything in lowercase
+			terms[i] = terms[i].toLowerCase();
+			
+			if(!tree.contains(terms[i])){
+				String singularForm = inflector.singularize(terms[i]);
 				stemmer.add(singularForm);
-				sb.append(stemmer.stem().toString()).append(" ");
+				//sb.append(stemmer.stem().toString()).append(" ");
+				document.addToken(stemmer.stem().toString());
 				stemmer.clear();
 			}
 		}
-		document.setProcessedText(sb.toString());
-		System.out.println("Processed as : " + document.getProcessedText());
+		//document.setProcessedText(sb.toString());
+		//System.out.println("Processed as : " + document.getProcessedText());
+		return document;
 		
 		
 	}

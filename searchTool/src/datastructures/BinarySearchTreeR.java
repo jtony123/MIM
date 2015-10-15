@@ -62,6 +62,30 @@ public class BinarySearchTreeR<T extends Comparable<? super T>>
 	  return result;
 	} // end findEntry
 	
+	public BinaryNodeInterface<T> getNode(String token){
+		return findNode(getRootNode(), token);
+	}
+	private BinaryNodeInterface<T> findNode(BinaryNodeInterface<T> binaryNodeInterface, String token){
+		  BinaryNodeInterface<T> result = null;
+		  
+		  if (binaryNodeInterface != null)
+		  {
+		    T rootEntry = binaryNodeInterface.getData();
+		    
+		    if (token.equals(rootEntry))
+		    	result = binaryNodeInterface;
+		     // result = rootEntry;
+		   //        entry    <      rootEntry) 
+		    else if (token.compareTo((String) rootEntry) < 0)
+		      result = findNode(binaryNodeInterface.getLeftChild(), token);
+		    else
+		      result = findNode(binaryNodeInterface.getRightChild(), token);
+		  } // end if
+		  
+		  return result;
+		
+	}
+	
 	// 27.10
 	public boolean contains(T entry)
 	{

@@ -31,7 +31,7 @@ public class FilesReader {
 	}
 
 
-	public void readFiles(File file){		
+	public void readFiles(File file, Document document){		
 	
         BufferedReader br = null;
         StringBuilder sb = null;
