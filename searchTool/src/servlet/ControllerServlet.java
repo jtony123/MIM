@@ -25,19 +25,23 @@ import fileprocessor.FilesReader;
 import fileprocessor.Inflector;
 import fileprocessor.Stemmer;
 import fileprocessor.Stopwords;
+import retrieval.BooleanExpressionTree;
+import retrieval.BooleanIR;
 
 /**
  * Servlet implementation class ControllerServlet
  */
 @WebServlet(name = "/ControllerServlet",
 			loadOnStartup = 1,
-			urlPatterns = {"/search"})
+			urlPatterns = {"/booleansearch"})
 public class ControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	public static String repoUrl = "C:\\a_files_repository";
 	public static String stopwordFile = "C:\\a_stopwords_repository\\stopwords.txt";
 	List<Document> documents = new ArrayList<Document>();
+	List<Map<Integer,Document>> documentIndex = new ArrayList<Map<Integer,Document>>();
+	List<Integer> documentsIdList = new ArrayList<Integer>();
 	AVLTree<String> stopwordTree;
 	AVLTree<String> invertedIndex;
 
@@ -48,6 +52,7 @@ public class ControllerServlet extends HttpServlet {
         // TODO Auto-generated constructor stub
     }
     
+
 	/**
 	 * @see Servlet#init(ServletConfig)
 	 */
@@ -55,20 +60,21 @@ public class ControllerServlet extends HttpServlet {
 
 		// build a balanced tree of stopwords.
 		stopwordTree = new Stopwords(stopwordFile).getAvlTree();
-		
 		// TODO: check if serialised indexer exists, otherwise build it.		
 		
         File[] files = new File(repoUrl).listFiles();
 		// preprocess each file found
         for (int i = 0; i<files.length; ++i) {
-        	//Document document = new Document();
         	DocumentProcessor documentProcessor = new DocumentProcessor();
-        	//documentProcessor.getDocument().setDocumentId(new Integer(10));
         	Document document = documentProcessor.processFile(files[i], stopwordTree);
-        	document.setDocumentId(i+1);
+        	document.setDocumentId(i);
+        	documentsIdList.add(i);
         	
-        	System.out.println("doc id = " + document.getDocumentId());
-        	documents.add(document);
+        	Map<Integer,Document> mapping = new HashMap<Integer, Document>();
+			mapping.put(document.getDocumentId(), document);
+			
+			documentIndex.add(mapping); 			 
+        	documents.add(i, document);
         }
         
         invertedIndex = new AVLTree<String> ();
@@ -76,7 +82,10 @@ public class ControllerServlet extends HttpServlet {
         	for(String token : document.getDocumentTokens()){
         		invertedIndex.add(token);
         		BinaryNodeInterface<String> node = invertedIndex.getNode(token);
-        		node.getPostings().add(document.getDocumentId());
+        		List<Integer> postings = node.getPostings();//.add(document.getDocumentId());
+        		if(!postings.contains(document.getDocumentId())){
+        			node.getPostings().add(document.getDocumentId());
+        		}
         		node.incrementDocumentFrequency();       		
         	}
         }        
@@ -102,74 +111,37 @@ public class ControllerServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		System.out.println("got to doPost method");
-		
 		String userPath = request.getServletPath();
-		String url = "/SearchPage.jsp";// + userPath + ".jsp";
+		String url = "/BooleanSearchPage.jsp";// + userPath + ".jsp";
 		
         HttpSession session = request.getSession();
-		if (userPath.equals("/search")) {
+		if (userPath.equals("/booleansearch")) {
 
             String queryterms = request.getParameter("searchterms");
             System.out.println("got these : "+queryterms);
             
-            //String[] termsArray = queryterms.split("\\s");
-            DocumentProcessor documentProcessor = new DocumentProcessor();
-            String[] termsArray = documentProcessor.processQuery(queryterms);
             List<Map<String,String>> matchingDocs = new ArrayList<Map<String,String>>();
-            
-            session.setAttribute("terms", queryterms);
-            
-            for (Document doc : documents){
-            	for (int i=0; i<termsArray.length; ++i){
-            		if(doc.getDocumentTokens().contains(termsArray[i].toLowerCase())){
-            			
-            			 Map<String,String> d = new HashMap<String, String>();
-            			 d.put("name", doc.getDocumentName());
-            			 d.put("url", doc.getFilePath());
-            			 matchingDocs.add(d);
-            		}
-            	}            	
-            }
-            
-            List<List> matchedPostingLists = new ArrayList<List>();
-            for(String queryTerm : termsArray){
-            	BinaryNodeInterface<String> node = invertedIndex.getNode(queryTerm);
-            	if(node != null){
-            		matchedPostingLists.add(node.getPostings());            		
-            	}
-            }
-            // TODO: need to sort the matchedPostingLists ascending in order of size of list.
-            
-            List<Integer> matchedDocs = new ArrayList<Integer>();
-            
-            for(int i=0,j=0;i<matchedPostingLists.get(0).size() && j < matchedPostingLists.get(1).size();++i,++j){
-            	if(matchedPostingLists.get(0).get(i) == matchedPostingLists.get(1).get(j)){
-            		matchedDocs.add((Integer) matchedPostingLists.get(0).get(i));
-            		++i;++j;
-            	} else {
-            		if(matchedPostingLists.get(0).get(i) == matchedPostingLists.get(1).get(j)){
-            			
-            		}
-            	}
-            }
-            
-            // intersect 1 and 2
-            
-            
-            // intersect matched with 3
-            
-            // intersect matched with 4, etc...
-            
-            
-            
-
-            
+            try {
+				BooleanExpressionTree bet = new BooleanExpressionTree(queryterms, invertedIndex, documentsIdList);
+				bet.printExpression();
+				
+				List<Integer> matchedDocs = bet.eval();
+				
+				  for(Integer i : matchedDocs){            	
+		            	Document doc = documents.get(i);
+		            	Map<String,String> d = new HashMap<String, String>();
+		   			 	d.put("name", doc.getDocumentName());
+		   			 	d.put("url", doc.getFilePath());
+		   			 	matchingDocs.add(d);
+		            }
+				  
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+            session.setAttribute("queryterms", queryterms);
             session.setAttribute("matchingDocs", matchingDocs);
-            
-            
-            
-            
+         
 		}
         try {
             request.getRequestDispatcher(url).forward(request, response);

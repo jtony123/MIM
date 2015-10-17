@@ -34,6 +34,20 @@ public class DocumentProcessor {
 		return terms;
 	}
 	
+	public String processTerm(String term){
+		
+		Inflector inflector = new Inflector();	
+		Stemmer stemmer = new Stemmer();
+		//put everything in lowercase
+		term = term.toLowerCase();
+		
+		String singularForm = inflector.singularize(term);
+		stemmer.add(singularForm);
+		term = stemmer.stem().toString();
+		stemmer.clear();
+		return term;
+	}
+	
 	public Document processFile(File file, AVLTree<String> tree) {
 		Document document = new Document();
 		// read in the file

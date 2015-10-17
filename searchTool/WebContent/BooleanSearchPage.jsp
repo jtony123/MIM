@@ -11,22 +11,28 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>CT422 SearchTool</title>
+<title>Boolean Search</title>
 </head>
 <body>  
     <div id="indexCentreColumn">
-    <form action='search' method="post">
-    	Terms:
+    <form action='booleansearch' method="post">
+    Boolean Search: <br>
+    Examples: dog; <br>
+    			(dog AND cat); <br>
+    			(dog AND NOT cat); <br>
+    			((dog AND cat) OR pet)<br>
+    			((dog OR cat) AND NOT pet)<br><br>
+    	
 		<div>
-	        <input type="text"
-	               size="31"
+	        Query:<input type="text"
+	               size="50"
 	               maxlength="45"
 	               name="searchterms">
 	      	<input type="submit" value="Search">
        	</div> 
        	
     </form>
-    ${terms}    
+    ${errormessage}${queryterms}    
             <div>
             <c:forEach var="doc" items="${matchingDocs}">
                   <div>
