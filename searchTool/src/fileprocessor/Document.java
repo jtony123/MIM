@@ -12,7 +12,43 @@ public class Document {
 	private String processedText;
 	private List<String> documentTokens;
 	private int wordCount;
+	private Double vectorLength = 0.0;
+	private Double documentScore = 0.0;
 	
+	
+	
+	/**
+	 * @return the vectorLength
+	 */
+	public Double getVectorLength() {
+		return vectorLength;
+	}
+
+	/**
+	 * @param vectorLength the vectorLength to set
+	 */
+	public void setVectorLength(Double vectorLength) {
+		this.vectorLength = vectorLength;
+	}
+
+	/**
+	 * @return the documentScore
+	 */
+	public Double getDocumentScore() {
+		return documentScore;
+	}
+	
+	public void addToDocumentScore(Double tfidf){
+		documentScore += tfidf;
+	}
+
+	/**
+	 * @param documentScore the documentScore to set
+	 */
+	public void setDocumentScore(Double documentScore) {
+		this.documentScore = documentScore;
+	}
+
 	public Document(){
 		documentTokens = new ArrayList<String>();
 		documentId = new Integer(0);

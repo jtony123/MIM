@@ -6,6 +6,7 @@ import java.util.List;
 
 import datastructures.AVLTree;
 import datastructures.BinaryNodeInterface;
+import datastructures.Posting;
 import fileprocessor.DocumentProcessor;
 
 /** Splits a string representing an expression into tokens. The tokens are
@@ -168,8 +169,7 @@ public class Scanner {
                 	String term = dp.processTerm(input.sval);
                 	BinaryNodeInterface<String> node = invertedIndex.getNode(term);
                 	if(node != null){
-                		List<Integer> match = node.getPostings();
-                		return new Token(match);
+                		return new Token(node.getPostingsDocumentIds());
                 	} else {
                 		List<Integer> list = new ArrayList<Integer>();
                 		return new Token(list);
