@@ -15,6 +15,7 @@
 </head>
 <body>  
     <div id="indexCentreColumn">
+     <a href="rankedsearch">Simple Ranked Search</a> 
     <form action='booleansearch' method="post">
     Boolean Search: <br>
     Examples: dog; <br>
@@ -34,11 +35,9 @@
     </form>
     ${errormessage}${queryterms}    
             <div>
-            <c:forEach var="doc" items="${matchingDocs}">
+            <c:forEach var="doc" items="${matchingDocuments}">
                   <div>
-                        ${doc.name} can be found here 
-                        <a href="${doc.url}">
-                        </a>
+                        ${doc.documentName} can be found here 
                 </div>
             </c:forEach>
         </div>

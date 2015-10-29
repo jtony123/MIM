@@ -12,16 +12,27 @@ public class Document {
 	private String processedText;
 	private List<String> documentTokens;
 	private int wordCount;
+	private double normtf;
+	private double tfidf;
 	private Double vectorLength = 0.0;
-	private Double documentScore = 0.0;
-	
-	
+	private Double documentScore = 0.0;	
 	
 	/**
 	 * @return the vectorLength
 	 */
 	public Double getVectorLength() {
 		return vectorLength;
+	}
+	
+	public void incrementVectorLength(double increment){
+		vectorLength += Math.pow(increment, 2);
+	}
+	
+	public void adjustVectorLength(double adjustment){
+		// take off previous squared component
+		vectorLength -= Math.pow(adjustment-1.0, 2);
+		// replace it with current tf
+		incrementVectorLength(adjustment);
 	}
 
 	/**
@@ -122,6 +133,15 @@ public class Document {
 	}
 	public void setWordCount(int wordCount) {
 		this.wordCount = wordCount;
+	}
+
+	/**
+	 * @param termFrequency
+	 */
+	public void setNormalisedTf(Integer termFrequency) {
+
+		this.normtf = termFrequency/this.vectorLength;
+		
 	}
 	
 	

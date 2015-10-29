@@ -15,13 +15,20 @@
 </head>
 <body>  
     <div id="indexCentreColumn">
+    <a href="booleansearch">Boolean Search</a> 
     <form action='rankedsearch' method="post">
-    Ranked Vector Model Search: Rank is determined by the sum of all (term frequency over normalised document vector)<br>
-    Examples: dog cat pet<br><br>    	
+    Ranked Vector Model Search:<br>
+    Term Frequency (tf) = count of occurences of a term in a document<br>
+    Normalised Term Frequency (ntf(t)) = tf(d)/|V(d)|<br>
+    Inverse Document Frequency (idf(t)) = Log10(Total Document Count / document frequency(t))<br>
+    Weight of a term in the query w(t,q) = tf(q) * idf(t)<br>
+    
+    Rank is determined by the sum of all weights i.e. the dot product of the vectors<br>
+    Example Query: dog cat pet<br><br>    	
 		<div>
 	        Query:<input type="text"
 	               size="50"
-	               maxlength="45"
+	               maxlength="255"
 	               name="searchterms">
 	      	<input type="submit" value="Search">
        	</div> 
