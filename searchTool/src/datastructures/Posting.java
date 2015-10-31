@@ -11,6 +11,7 @@ public class Posting {
 	private Integer documentId;
 	private Integer termFrequency;
 	private double ntf;
+	private double tfBM25;
 	private List<Integer> termPositions;
 	
 	public Posting(){
@@ -85,6 +86,24 @@ public class Posting {
 		this.ntf = tf/docVectorLength;
 	}
 	
+	/**
+	 * @return the tfBM25
+	 */
+	public double getTfBM25() {
+		return tfBM25;
+	}
+
+	/**
+	 * @param tfBM25 the tfBM25 to set
+	 */
+	public void setTfBM25(double docLen, double avgDoclen) {
+		double k1 = 1.5;
+		double b = 0.75;
+		
+		this.tfBM25 = (((double)this.getTermFrequency() * (k1 + 1.0))/
+				((double)this.getTermFrequency() + (k1 * ((1.0 - b)+(b * (docLen/avgDoclen))))));
+	}
+
 	/**
 	 * @return the termPositions
 	 */

@@ -45,15 +45,16 @@ urlPatterns = {"/booleansearch",
 public class ControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	public static String repoUrl = "C:\\a_files_repository";
+	//public static String repoUrl = "C:\\a_files_repository";
 	//public static String repoUrl = "C:\\aa_files_repository\\CranField";
-	//public static String repoUrl = "C:\\a_med\\files";
+	public static String repoUrl = "C:\\a_med\\files";
 	public static String stopwordFile = "C:\\a_stopwords_repository\\stopwords.txt";
 	List<Document> documents = new ArrayList<Document>();
 	Map<Integer, Document> documentMap = new HashMap<Integer, Document>();
 	List<Integer> documentsIdList = new ArrayList<Integer>();
 	AVLTree<String> stopwordTree;
 	AVLTree<String> invertedIndex;
+	public double averageDocumentLength = 0;
 
 	/**
 	 * Default constructor. 
@@ -81,7 +82,10 @@ public class ControllerServlet extends HttpServlet {
 			documentsIdList.add(i);
 			documentMap.put(document.getDocumentId(), document);		 
 			documents.add(i, document);
+			averageDocumentLength += document.getDocumentTokens().size();
 		}
+		averageDocumentLength = averageDocumentLength/(double)documents.size();
+		
 
 		invertedIndex = new AVLTree<String> ();
 		for(Document document : documents){
@@ -100,6 +104,7 @@ public class ControllerServlet extends HttpServlet {
 						posting.addTermPosition(i);
 						document.adjustVectorLength((double)(posting.getTermFrequency()));											
 						node.setIdf(documents.size());
+						node.setIdfBM25(documents.size());
 						newPosting = false;
 					}
 				}
@@ -110,6 +115,7 @@ public class ControllerServlet extends HttpServlet {
 					post.addTermPosition(i);
 					node.getPostings().add(post);
 					node.setIdf(documents.size());
+					node.setIdfBM25(documents.size());
 					document.incrementVectorLength((double)(post.getTermFrequency()));
 				}        		       		
 				//}
@@ -120,6 +126,10 @@ public class ControllerServlet extends HttpServlet {
 		}        
 		//invertedIndex.inorderTraverse();
 		invertedIndex.calculateNtf();
+		// calculate bm25
+		invertedIndex.calculateTfBM25(averageDocumentLength);
+		
+		
 		//		for (Document d:documents){
 		//			System.out.println(d.getDocumentName()+" " + d.getVectorLength()+" "+d.getDocumentTokens());
 		//		}
@@ -262,8 +272,8 @@ public class ControllerServlet extends HttpServlet {
 					for(Posting post : node.getPostings()){
 						Document doc = post.getDocument();
 						// calculating the score for this document.
-						//doc.addToDocumentScore(((double)post.getTermFrequency())/doc.getVectorLength());
-						doc.addToDocumentScore(node.getIdf()*post.getNtf());
+						//doc.addToDocumentScore(node.getIdf()*post.getNtf());
+						doc.addToDocumentScore(node.getIdfBM25()*post.getTfBM25());
 						// only add the document once to the collection
 						if(!relevantDocs.contains(doc)) {
 							relevantDocs.add(doc);
