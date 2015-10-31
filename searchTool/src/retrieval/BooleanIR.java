@@ -39,6 +39,11 @@ public class BooleanIR {
 	            }
          	}
      	}
+//         System.out.print("matching docs ");
+//         for(Integer x:matchedDocs){
+//        	 System.out.print(x + ", ");
+//         }
+         
 		return matchedDocs;		
 	}
 

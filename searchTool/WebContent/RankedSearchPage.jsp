@@ -15,7 +15,9 @@
 </head>
 <body>  
     <div id="indexCentreColumn">
-    <a href="booleansearch">Boolean Search</a> 
+    <a href="booleansearch">Boolean Search</a><br>
+    <a href="phrasesearch">Phrase Search</a> <br>
+    <a href="bm25rankedsearch">BM25 Ranked Search</a>
     <form action='rankedsearch' method="post">
     Ranked Vector Model Search:<br>
     Term Frequency (tf) = count of occurences of a term in a document<br>
@@ -27,7 +29,7 @@
     Example Query: dog cat pet<br><br>    	
 		<div>
 	        Query:<input type="text"
-	               size="50"
+	               size="100"
 	               maxlength="255"
 	               name="searchterms">
 	      	<input type="submit" value="Search">

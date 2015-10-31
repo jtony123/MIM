@@ -1,7 +1,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%-- 
     Document   : Homepage
-    Created on : 09-Oct-2015, 21:54:15
+    Created on : 31-Oct-2015, 21:54:15
     Author     : jtony_000
 --%>
 
@@ -11,22 +11,16 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<title>Boolean Search</title>
+<title>BM 25</title>
 </head>
 <body>  
     <div id="indexCentreColumn">
-     <a href="rankedsearch">Simple Ranked Search</a> <br>
-     <a href="phrasesearch">Phrase Search</a> <br>
-     <a href="bm25rankedsearch">BM25 Ranked Search</a>
-     
-    <form action='booleansearch' method="post">
-    Boolean Search: <br>
-    Examples: dog; <br>
-    			(dog AND cat); <br>
-    			(dog AND NOT cat); <br>
-    			(pet OR (dog AND cat))<br>
-    			(NOT pet AND (dog OR cat))<br><br>
-    	
+    <a href="booleansearch">Boolean Search</a><br>
+    <a href="rankedsearch">Simple Ranked Search</a><br>
+    <a href="phrasesearch">Phrase Search</a> 
+    <form action='bm25rankedsearch' method="post">
+    BM25 ranked search:<br>
+    Example Query: dog cat pet<br><br>    	
 		<div>
 	        Query:<input type="text"
 	               size="100"
@@ -36,11 +30,11 @@
        	</div> 
        	
     </form>
-    ${errormessage}${queryterms}    
+    ${query}    
             <div>
-            <c:forEach var="doc" items="${matchingDocuments}">
+            <c:forEach var="doc" items="${relevantDocs}">
                   <div>
-                        ${doc.documentName} can be found here 
+                        found ${doc.documentName} with score ${doc.documentScore}
                 </div>
             </c:forEach>
         </div>
