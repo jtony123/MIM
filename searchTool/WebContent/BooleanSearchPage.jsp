@@ -17,7 +17,8 @@
     <div id="indexCentreColumn">
      <a href="rankedsearch">Simple Ranked Search</a> <br>
      <a href="phrasesearch">Phrase Search</a> <br>
-     <a href="bm25rankedsearch">BM25 Ranked Search</a>
+     <a href="bm25rankedsearch">BM25 Ranked Search</a><br>
+     <a href="testcollection">Precision Recall Graph</a>
      
     <form action='booleansearch' method="post">
     Boolean Search: <br>

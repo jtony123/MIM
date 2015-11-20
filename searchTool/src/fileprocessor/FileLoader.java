@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilesReader {
+public class FileLoader {
 	
 	private Document document;
 		
-	public FilesReader(){
+	public FileLoader(){
 		document = new Document();
 	}	
 	

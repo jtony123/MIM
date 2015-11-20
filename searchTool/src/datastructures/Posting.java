@@ -117,7 +117,7 @@ public class Posting {
 	public void addTermPosition(Integer position){
 		termPositions.add(position);
 	}	
-
+	// ", "
     @Override public boolean equals(Object other) {
         boolean result = false;
         if (other instanceof Posting) {

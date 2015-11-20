@@ -12,7 +12,7 @@ import datastructures.AVLTree;
 import datastructures.BinaryNodeInterface;
 import datastructures.Posting;
 import fileprocessor.Document;
-import fileprocessor.DocumentProcessor;
+import fileprocessor.FilesProcessor;
 
 
 public class PhraseIR {
@@ -28,7 +28,7 @@ public class PhraseIR {
 		ArrayList<Integer> common;
 		
 		for(String term : query.split("\\s")){
-			term = new DocumentProcessor().processTerm(term);
+			term = new FilesProcessor().processTerm(term);
 			BinaryNodeInterface<String> node = invertedIndex.getNode(term);				
 			
 			if (node != null) {	

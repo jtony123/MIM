@@ -48,8 +48,12 @@ public class BinarySearchTreeR<T extends Comparable<? super T>>
 	  
 	  if (rootNode != null)
 	  {
+		  // the root node data will contain which attribute to test
+		  // the data will also contain the threshold to test at
 	    T rootEntry = rootNode.getData();
 	    
+	    // entry will be the instance being passed in, with the data telling it which attribute
+	    // to test for equality on
 	    if (entry.equals(rootEntry))
 	      result = rootEntry;
 	   //        entry    <      rootEntry) 

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,15 +22,10 @@ import datastructures.AVLTree;
 import datastructures.BinaryNodeInterface;
 import datastructures.Posting;
 import fileprocessor.Document;
-import fileprocessor.DocumentProcessor;
-import fileprocessor.FilesReader;
-import fileprocessor.Inflector;
-import fileprocessor.Stemmer;
+import fileprocessor.FilesProcessor;
 import fileprocessor.Stopwords;
-import retrieval.BooleanExpressionTree;
 import retrieval.BooleanIR;
 import retrieval.PhraseIR;
-import retrieval.Token;
 
 /**
  * Servlet implementation class ControllerServlet
@@ -39,9 +33,12 @@ import retrieval.Token;
 @WebServlet(name = "/ControllerServlet",
 loadOnStartup = 1,
 urlPatterns = {"/booleansearch",
-		"/rankedsearch",
-		"/phrasesearch",
-"/bm25rankedsearch"})
+				"/rankedsearch",
+				"/phrasesearch",
+				"/bm25rankedsearch",
+				"/bm25",
+				"/testcollection"})
+
 public class ControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -49,12 +46,11 @@ public class ControllerServlet extends HttpServlet {
 	//public static String repoUrl = "C:\\aa_files_repository\\CranField";
 	public static String repoUrl = "C:\\a_med\\files";
 	public static String stopwordFile = "C:\\a_stopwords_repository\\stopwords.txt";
-	List<Document> documents = new ArrayList<Document>();
-	Map<Integer, Document> documentMap = new HashMap<Integer, Document>();
-	List<Integer> documentsIdList = new ArrayList<Integer>();
+	List<Document> documents;// = new ArrayList<Document>();
+	Map<Integer, Document> documentMap;// = new HashMap<Integer, Document>();
 	AVLTree<String> stopwordTree;
 	AVLTree<String> invertedIndex;
-	public double averageDocumentLength = 0;
+	//public double averageDocumentLength = 0;
 
 	/**
 	 * Default constructor. 
@@ -70,77 +66,78 @@ public class ControllerServlet extends HttpServlet {
 	public void init(ServletConfig config) throws ServletException {
 
 		// build a balanced tree of stopwords.
+		FilesProcessor filesProcessor = new FilesProcessor();
 		stopwordTree = new Stopwords(stopwordFile).getAvlTree();
+		invertedIndex = filesProcessor.getInvertedIndex(stopwordTree, repoUrl);
+		documentMap = filesProcessor.getDocumentMap();
+		documents = filesProcessor.getDocuments();
 		// TODO: check if serialised indexer exists, otherwise build it.		
 
-		File[] files = new File(repoUrl).listFiles();
-		// preprocess each file found
-		for (int i = 0; i<files.length; ++i) {
-			DocumentProcessor documentProcessor = new DocumentProcessor();
-			Document document = documentProcessor.processFile(files[i], stopwordTree);
-			document.setDocumentId(i);
-			documentsIdList.add(i);
-			documentMap.put(document.getDocumentId(), document);		 
-			documents.add(i, document);
-			averageDocumentLength += document.getDocumentTokens().size();
-		}
-		averageDocumentLength = averageDocumentLength/(double)documents.size();
 		
-
-		invertedIndex = new AVLTree<String> ();
-		for(Document document : documents){
-
-			//using iterator over the list to get the positions of repeated terms in a document
-			for(int i = 0;i<document.getDocumentTokens().size();++i){
-				String token= document.getDocumentTokens().get(i);
-				invertedIndex.add(token);
-				BinaryNodeInterface<String> node = invertedIndex.getNode(token);
-				Boolean newPosting = true;
-				// check the postings to see if this term in this document is posted already
-				// also need to check if position matches
-				for(Posting posting:node.getPostings()){        			
-					if(posting.getDocument().equals(document)){
-						posting.incrementTermFrequency();
-						posting.addTermPosition(i);
-						document.adjustVectorLength((double)(posting.getTermFrequency()));											
-						node.setIdf(documents.size());
-						node.setIdfBM25(documents.size());
-						newPosting = false;
-					}
-				}
-				if(newPosting){
-					Posting post = new Posting(document);
-					post.setDocumentId(document.getDocumentId());
-					post.incrementTermFrequency();
-					post.addTermPosition(i);
-					node.getPostings().add(post);
-					node.setIdf(documents.size());
-					node.setIdfBM25(documents.size());
-					document.incrementVectorLength((double)(post.getTermFrequency()));
-				}        		       		
-				//}
-			}
-			// calculate vector length of document
-			document.setVectorLength(Math.sqrt(document.getVectorLength()));//vectorLength);//
-
-		}        
-		//invertedIndex.inorderTraverse();
-		invertedIndex.calculateNtf();
-		// calculate bm25
-		invertedIndex.calculateTfBM25(averageDocumentLength);
+//		
+//		File[] files = new File(repoUrl).listFiles();
+//		// preprocess each file found
+//		for (int i = 0; i<files.length; ++i) {
+//			FilesProcessor documentProcessor = new FilesProcessor();
+//			Document document = documentProcessor.processFile(files[i], stopwordTree);
+//			document.setDocumentId(i);
+//			documentMap.put(document.getDocumentId(), document);		 
+//			documents.add(i, document);
+//			averageDocumentLength += document.getDocumentTokens().size();
+//		}
+//		averageDocumentLength = averageDocumentLength/(double)documents.size();
+//		
+//
+//		invertedIndex = new AVLTree<String> ();
+//		for(Document document : documents){
+//
+//			//using iterator over the list to get the positions of repeated terms in a document
+//			for(int i = 0;i<document.getDocumentTokens().size();++i){
+//				String token= document.getDocumentTokens().get(i);
+//				invertedIndex.add(token);
+//				BinaryNodeInterface<String> node = invertedIndex.getNode(token);
+//				Boolean newPosting = true;
+//				// check the postings to see if this term in this document is posted already
+//				// also need to check if position matches
+//				for(Posting posting:node.getPostings()){        			
+//					if(posting.getDocument().equals(document)){
+//						posting.incrementTermFrequency();
+//						posting.addTermPosition(i);
+//						document.adjustVectorLength((double)(posting.getTermFrequency()));											
+//						node.setIdf(documents.size());
+//						node.setIdfBM25(documents.size());
+//						newPosting = false;
+//					}
+//				}
+//				if(newPosting){
+//					Posting post = new Posting(document);
+//					post.setDocumentId(document.getDocumentId());
+//					post.incrementTermFrequency();
+//					post.addTermPosition(i);
+//					node.getPostings().add(post);
+//					node.setIdf(documents.size());
+//					node.setIdfBM25(documents.size());
+//					document.incrementVectorLength((double)(post.getTermFrequency()));
+//				}        		       		
+//				//}
+//			}
+//			// calculate vector length of document
+//			document.setVectorLength(Math.sqrt(document.getVectorLength()));//vectorLength);//
+//
+//		}        
+//		//invertedIndex.inorderTraverse();
+//		invertedIndex.calculateNtf();
+//		// calculate bm25
+//		invertedIndex.calculateTfBM25(averageDocumentLength);
+//		
+//		System.out.println("Ready");
 		
-		
-		//		for (Document d:documents){
-		//			System.out.println(d.getDocumentName()+" " + d.getVectorLength()+" "+d.getDocumentTokens());
-		//		}
 	}
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-		//String url = "/BooleanSearchPage.jsp";
 
 		String userPath = request.getServletPath();
 		String url = null;
@@ -153,6 +150,8 @@ public class ControllerServlet extends HttpServlet {
 			url = "/PhraseSearchPage.jsp";
 		} else if (userPath.equals("/bm25rankedsearch")){
 			url = "/BM25RankedSearchPage.jsp";
+		} else if (userPath.equals("/testcollection")){
+			url = "/PrecisionRecallGraphs.jsp";
 		}
 
 		try {
@@ -171,27 +170,21 @@ public class ControllerServlet extends HttpServlet {
 		String url = null;
 
 		HttpSession session = request.getSession();
-		if (userPath.equals("/booleansearch")) {
-			// ************************************************  boolean search   ********************
-			String queryterms = request.getParameter("searchterms");
-			List<Document> matchingDocuments = new ArrayList<Document>();
-			try {
-				BooleanExpressionTree booleanExpressionTree = new BooleanExpressionTree(queryterms, invertedIndex, documentsIdList);
-				booleanExpressionTree.printExpression();
-				for(Integer i : booleanExpressionTree.eval()){
-					matchingDocuments.add(documentMap.get(i));
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
+		if (userPath.equals("/booleansearch")) {// *******************  boolean search   ********************
+			
+			List<Document> matchingDocs = new ArrayList<Document>();
+				
+			for(Integer i : new BooleanIR(request.getParameter("searchterms"),invertedIndex, documentMap.size()).eval()){
+				matchingDocs.add(documentMap.get(i));
 			}
+			
 			url = "/BooleanSearchPage.jsp";
-			session.setAttribute("queryterms", queryterms);
-			session.setAttribute("matchingDocuments", matchingDocuments);
+			session.setAttribute("queryterms", request.getParameter("searchterms"));
+			session.setAttribute("matchingDocuments", matchingDocs);
 
-		} else if(userPath.equals("/rankedsearch")){
-			// ************************************************   simple ranked search   ********************
+		} else if(userPath.equals("/rankedsearch")){ // *************   simple ranked search   ********************
 
+			
 			String query = request.getParameter("searchterms"); 
 			// must clear all previous scores :( not very efficient
 			for (Document doc : documents){
@@ -201,7 +194,7 @@ public class ControllerServlet extends HttpServlet {
 			List<Document> relevantDocs = new ArrayList<Document>();
 
 			for(String term : query.split("\\s")){
-				term = new DocumentProcessor().processTerm(term);
+				term = new FilesProcessor().processTerm(term);
 				BinaryNodeInterface<String> node = invertedIndex.getNode(term);
 
 				if (node != null) {
@@ -257,6 +250,9 @@ public class ControllerServlet extends HttpServlet {
 		} else if(userPath.equals("/bm25rankedsearch")){
 			// ************************************************   BM25 search    ********************
 			String query = request.getParameter("searchterms"); 
+			String NumResults = request.getParameter("numResults");
+			//int k = Integer.parseInt(NumResults);
+			System.out.println(query);
 			// must clear all previous scores :( not very efficient
 			for (Document doc : documents){
 				doc.setDocumentScore(0.0);
@@ -265,7 +261,7 @@ public class ControllerServlet extends HttpServlet {
 			List<Document> relevantDocs = new ArrayList<Document>();
 
 			for(String term : query.split("\\s")){
-				term = new DocumentProcessor().processTerm(term);
+				term = new FilesProcessor().processTerm(term);
 				BinaryNodeInterface<String> node = invertedIndex.getNode(term);
 
 				if (node != null) {
@@ -288,15 +284,53 @@ public class ControllerServlet extends HttpServlet {
 				}
 			});
 			Collections.reverse(relevantDocs);
-			session.setAttribute("query", query);
-			session.setAttribute("relevantDocs", relevantDocs);
+			
+			// limit size of results set to top 20
+			
+			int L = 20;
+
+			//List<Document> newList = new ArrayList<>(relevantDocs.subList(0,L));
+			
+			//session.setAttribute("query", query);
+			session.setAttribute("relevantDocs", new ArrayList<>(relevantDocs.subList(0,L)));
 
 			url = "/BM25RankedSearchPage.jsp";
+			
+			
+			
+		} else if(userPath.equals("/testcollection")){
+			// TODO: 
+			String path = request.getParameter("path");
+			
+			if(!path.equals("")){
+				System.out.println("passed "+path);
+//				FilesProcessor filesProcessor = new FilesProcessor();
+//				stopwordTree = new Stopwords(stopwordFile).getAvlTree();
+//				invertedIndex = filesProcessor.getInvertedIndex(stopwordTree, path);
+//				documentMap = filesProcessor.getDocumentMap();
+//				documents = filesProcessor.getDocuments();
+				
+				
+				
+				
+				
+				
+			} else {
+				System.out.println("failed "+path);
+			}
+			
+			
+			
+			
+			
+			
+			url = "/PrecisionRecallGraphs.jsp";
 		}
 
 
 
 		try {
+			
 			request.getRequestDispatcher(url).forward(request, response);
 		} catch (Exception ex) {
 			ex.printStackTrace();

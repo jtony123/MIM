@@ -7,7 +7,7 @@ import java.util.List;
 import datastructures.AVLTree;
 import datastructures.BinaryNodeInterface;
 import datastructures.Posting;
-import fileprocessor.DocumentProcessor;
+import fileprocessor.FilesProcessor;
 
 /** Splits a string representing an expression into tokens. The tokens are
  * read one at a time. Three different methods are used to access the
@@ -28,8 +28,9 @@ public class Scanner {
 
     /** Where I read my input.*/
     private StreamTokenizer input;
+    
     private AVLTree<String> invertedIndex;
-    private List<Integer> documentsIdList;
+    private int numDocuments;
 
     /** Invariant: curToken always contains the next token; otherwise,
      * there is no more input. */
@@ -41,13 +42,13 @@ public class Scanner {
      *
      * @param s the string to tokenize
      * @param invertedIndex 
-     * @param documentsIdList 
+     * @param i 
      */
-    public Scanner(String s, AVLTree<String> invertedIndex, List<Integer> documentsIdList) {
+    public Scanner(String s, AVLTree<String> invertedIndex, int numDocs) {
         // Construct a tokenizer on the input string.
         input = new StreamTokenizer( new StringReader( s ));
         this.invertedIndex = invertedIndex;
-        this.documentsIdList = documentsIdList;
+        this.numDocuments = numDocs;
         // Set some parameters so that we read arithmetic expressions
         // properly.
         input.ordinaryChar('/');
@@ -153,7 +154,10 @@ public class Scanner {
                 		if(token.isList()){
                     		List<Integer> match = token.getValue();
                     		List<Integer> tempList = new ArrayList<Integer>();
-                    		tempList.addAll(documentsIdList);
+                    		for(int i = 0; i<numDocuments;++i){
+                    			tempList.add(i);
+                    		}
+                    		//tempList.addAll(documentsIdList);
                     		for(Integer i : match){
                     			tempList.remove(i);
                     		}                   		
@@ -165,7 +169,7 @@ public class Scanner {
                     	}
                 		
                 	}
-                	DocumentProcessor dp = new DocumentProcessor();
+                	FilesProcessor dp = new FilesProcessor();
                 	String term = dp.processTerm(input.sval);
                 	BinaryNodeInterface<String> node = invertedIndex.getNode(term);
                 	if(node != null){
