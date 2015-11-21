@@ -17,44 +17,18 @@ public class FilesProcessor {
 	List<Document> documents = new ArrayList<Document>();
 	public double averageDocumentLength = 0;
 	
-	
-	
-	/**
-	 * @return the documentMap
-	 */
 	public Map<Integer, Document> getDocumentMap() {
 		return documentMap;
 	}
 
-
-
-
-
-	/**
-	 * @param documentMap the documentMap to set
-	 */
 	public void setDocumentMap(Map<Integer, Document> documentMap) {
 		this.documentMap = documentMap;
 	}
 
-
-
-
-
-	/**
-	 * @return the documents
-	 */
 	public List<Document> getDocuments() {
 		return documents;
 	}
 
-
-
-
-
-	/**
-	 * @param documents the documents to set
-	 */
 	public void setDocuments(List<Document> documents) {
 		this.documents = documents;
 	}
@@ -84,6 +58,19 @@ public class FilesProcessor {
 		
 		return getInvertedIndex();
 	}
+	
+	public AVLTree<String> getInvertedIndex(List<Document> docs){
+		
+		this.documents = docs;
+		for(Document doc : docs) {
+			documentMap.put(doc.getDocumentId(), doc);
+			averageDocumentLength += doc.getDocumentTokens().size();
+		}
+		averageDocumentLength = averageDocumentLength/(double)documents.size();
+		return getInvertedIndex();
+		
+	}
+	
 	
 	private AVLTree<String> getInvertedIndex(){
 
@@ -189,6 +176,7 @@ public class FilesProcessor {
 				document.addToken(stemmer.stem().toString());
 				stemmer.clear();
 			}
-		}return document;
+		}
+		return document;
 	}
 }

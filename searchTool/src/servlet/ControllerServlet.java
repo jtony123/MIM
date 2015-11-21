@@ -26,6 +26,9 @@ import fileprocessor.FilesProcessor;
 import fileprocessor.Stopwords;
 import retrieval.BooleanIR;
 import retrieval.PhraseIR;
+import testcorpushandler.DocumentBuilder;
+import testcorpushandler.Query;
+import testcorpushandler.QueryRelevanceBuilder;
 
 /**
  * Servlet implementation class ControllerServlet
@@ -37,19 +40,21 @@ urlPatterns = {"/booleansearch",
 				"/phrasesearch",
 				"/bm25rankedsearch",
 				"/bm25",
-				"/testcollection"})
+				"/testcollection",
+				"/queryprecisionrecall"})
 
 public class ControllerServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	//public static String repoUrl = "C:\\a_files_repository";
+	public static String repoUrl = "C:\\a_files_repository";
 	//public static String repoUrl = "C:\\aa_files_repository\\CranField";
-	public static String repoUrl = "C:\\a_med\\files";
+	//public static String repoUrl = "C:\\a_med\\files";
 	public static String stopwordFile = "C:\\a_stopwords_repository\\stopwords.txt";
 	List<Document> documents;// = new ArrayList<Document>();
 	Map<Integer, Document> documentMap;// = new HashMap<Integer, Document>();
 	AVLTree<String> stopwordTree;
 	AVLTree<String> invertedIndex;
+	List<Query> queries;
 	//public double averageDocumentLength = 0;
 
 	/**
@@ -71,6 +76,7 @@ public class ControllerServlet extends HttpServlet {
 		invertedIndex = filesProcessor.getInvertedIndex(stopwordTree, repoUrl);
 		documentMap = filesProcessor.getDocumentMap();
 		documents = filesProcessor.getDocuments();
+		invertedIndex.inorderTraverse();
 		// TODO: check if serialised indexer exists, otherwise build it.		
 
 		
@@ -151,9 +157,11 @@ public class ControllerServlet extends HttpServlet {
 		} else if (userPath.equals("/bm25rankedsearch")){
 			url = "/BM25RankedSearchPage.jsp";
 		} else if (userPath.equals("/testcollection")){
+			url = "/PrecisionRecallTest.jsp";
+		} else if (userPath.equals("/queryprecisionrecall")){
 			url = "/PrecisionRecallGraphs.jsp";
 		}
-
+		
 		try {
 			request.getRequestDispatcher(url).forward(request, response);
 		} catch (Exception ex) {
@@ -250,7 +258,7 @@ public class ControllerServlet extends HttpServlet {
 		} else if(userPath.equals("/bm25rankedsearch")){
 			// ************************************************   BM25 search    ********************
 			String query = request.getParameter("searchterms"); 
-			String NumResults = request.getParameter("numResults");
+			//String NumResults = request.getParameter("numResults");
 			//int k = Integer.parseInt(NumResults);
 			System.out.println(query);
 			// must clear all previous scores :( not very efficient
@@ -292,7 +300,9 @@ public class ControllerServlet extends HttpServlet {
 			//List<Document> newList = new ArrayList<>(relevantDocs.subList(0,L));
 			
 			//session.setAttribute("query", query);
-			session.setAttribute("relevantDocs", new ArrayList<>(relevantDocs.subList(0,L)));
+			//session.setAttribute("relevantDocs", new ArrayList<>(relevantDocs.subList(0,L)));
+			session.setAttribute("relevantDocs", relevantDocs);
+
 
 			url = "/BM25RankedSearchPage.jsp";
 			
@@ -302,26 +312,152 @@ public class ControllerServlet extends HttpServlet {
 			// TODO: 
 			String path = request.getParameter("path");
 			
+			Query testQ = null;
+			
 			if(!path.equals("")){
-				System.out.println("passed "+path);
-//				FilesProcessor filesProcessor = new FilesProcessor();
-//				stopwordTree = new Stopwords(stopwordFile).getAvlTree();
-//				invertedIndex = filesProcessor.getInvertedIndex(stopwordTree, path);
-//				documentMap = filesProcessor.getDocumentMap();
-//				documents = filesProcessor.getDocuments();
 				
+				File[] files = new File(path).listFiles();
 				
+				String all = "";
+				String qry = "";
+				String rel = "";
+				for(int i = 0; i<files.length;++i){
+					if(files[i].getName().contains("ALL")){
+						all = "\\"+files[i].getName();
+					} else if (files[i].getName().contains("QRY")){
+						qry = "\\"+files[i].getName();
+					} else if (files[i].getName().contains("REL")){
+						rel = "\\"+files[i].getName();
+					}
+				}
 				
+				// build a new inverted Index for this collection				
+				DocumentBuilder db = new DocumentBuilder(path + all, stopwordTree);
+				FilesProcessor filesProcessor = new FilesProcessor();
+				invertedIndex = filesProcessor.getInvertedIndex(db.getDocuments());
+				documentMap = filesProcessor.getDocumentMap();
+				documents = filesProcessor.getDocuments();
 				
+				QueryRelevanceBuilder qrb = new QueryRelevanceBuilder(path + qry, path + rel);
+				queries = qrb.getQueries();
+				//List<>
+				// submit each query and note the results
+				for (Query q: queries){
+					
+					for (Document doc : documents){
+						doc.setDocumentScore(0.0);
+					}
+					// TODO: change relevantDocs to a priority queue, pull the top 10 results from it, more efficient than sorting a list
+					List<Document> relevantDocs = new ArrayList<Document>();
+
+					for(String term : q.getQueryString().split("\\s")){
+						term = new FilesProcessor().processTerm(term);
+						BinaryNodeInterface<String> node = invertedIndex.getNode(term);
+
+						if (node != null) {
+							for(Posting post : node.getPostings()){
+								Document doc = post.getDocument();
+								doc.addToDocumentScore(node.getIdfBM25()*post.getTfBM25());
+								// only add the document once to the collection
+								if(!relevantDocs.contains(doc)) {
+									relevantDocs.add(doc);
+								}	        			
+							} 
+						}
+					}        	
+					Collections.sort(relevantDocs, new Comparator<Document>() {
+						@Override
+						public int compare(final Document doc1, final Document doc2) {
+							return doc1.getDocumentScore().compareTo(doc2.getDocumentScore());
+						}
+					});
+					Collections.reverse(relevantDocs);
+					// now check the returned docs against the relevant docs
+			         int numMatching = 0;
+			         List<Integer> deemedRelevant = new ArrayList<Integer>();
+			         deemedRelevant.addAll(q.getRelevantDocs());
+			         int counter = 1;
+			         for(Document d : relevantDocs){
+			        	 if(!deemedRelevant.isEmpty()){
+			        		 if(deemedRelevant.contains(d.getDocumentId())){
+				        		 //System.out.println(d.getDocumentId()+" matches query num " + q.getQueryNum());
+				        		 numMatching++;
+				        		 // here we populate the precision and recall figures for this query
+				        		 double prec = ((double)numMatching)/counter;
+				        		 q.addToPrecisionList((int)(prec*100));
+				        		 double rec = ((double)numMatching)/q.getRelevantDocs().size();
+				        		 q.addToRecallList((int)(rec*100));
+				        		 deemedRelevant.remove(d.getDocumentId());
+				        		 
+				        	 } else {
+				        		 double prec = ((double)numMatching)/counter;
+				        		 q.addToPrecisionList((int)(prec*100));
+				        		 double rec = ((double)numMatching)/q.getRelevantDocs().size();
+				        		 q.addToRecallList((int)(rec*100));
+			        		 }
+			        	 }
+			        	++counter;
+			         }
+			         
+			         // record the number of matches found
+			         q.setNumMatches(numMatching);
+			         q.setPrecision(((double)numMatching)/relevantDocs.size());
+			         q.setRecall(((double)numMatching)/q.getRelevantDocs().size());
+			         
+				}
 				
+				for(Query q : queries){
+					System.out.println("#"+q.getQueryNum());
+					System.out.print("precision values: ");
+					for(Integer d : q.getPrecisionList()){
+						System.out.print(d+", ");
+					}
+					System.out.println();
+					System.out.print("   recall values: ");
+					for(Integer d : q.getRecallList()){
+						System.out.print(d+", ");
+					}
+					System.out.println();
+				}
+				testQ = queries.get(1);
 				
 			} else {
 				System.out.println("failed "+path);
 			}
 			
+			List<Map<String, Integer>> precisionList = new ArrayList<>();
 			
+			//int i = 1;
 			
+			for (int i = 0; i< testQ.getRecallList().size(); ++i){
+				Map<String, Integer> precValue = new HashMap<String, Integer>();
+				precValue.put("rec", testQ.getRecallList().get(i));
+				precValue.put("prec", testQ.getPrecisionList().get(i));
+				precisionList.add(precValue);
+			}
 			
+			session.setAttribute("queryNum", 1);
+			session.setAttribute("precisionList", precisionList);
+			
+			url = "/PrecisionRecallGraphs.jsp";
+			
+		} else if(userPath.equals("/queryprecisionrecall")){
+			
+			String queryNum = request.getParameter("queryNum");
+			System.out.println("queryNum = "+queryNum);
+			int qNum = 1 + Integer.parseInt(queryNum);
+			
+			List<Map<String, Integer>> precisionList = new ArrayList<>();
+			
+			for (int i = 0; i< queries.get(qNum).getRecallList().size(); ++i){
+				Map<String, Integer> precValue = new HashMap<String, Integer>();
+				precValue.put("rec", queries.get(qNum).getRecallList().get(i));
+				precValue.put("prec", queries.get(qNum).getPrecisionList().get(i));
+				precisionList.add(precValue);
+			}
+			
+			session.setAttribute("queryNum", qNum);
+			session.setAttribute("precisionList", precisionList);
 			
 			
 			url = "/PrecisionRecallGraphs.jsp";
