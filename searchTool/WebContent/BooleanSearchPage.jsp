@@ -1,50 +1,95 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
 <%-- 
     Document   : Homepage
-    Created on : 09-Oct-2015, 21:54:15
+    Created on : 31-Oct-2015, 21:54:15
     Author     : jtony_000
 --%>
-
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-    pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <title>Boolean Search</title>
+
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script
+	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="js/jquery.canvasjs.min.js"></script>
 </head>
-<body>  
-    <div id="indexCentreColumn">
-     <a href="rankedsearch">Simple Ranked Search</a> <br>
-     <a href="phrasesearch">Phrase Search</a> <br>
-     <a href="bm25rankedsearch">BM25 Ranked Search</a><br>
-     <a href="testcollection">Precision Recall Graph</a>
-     
-    <form action='booleansearch' method="post">
-    Boolean Search: <br>
-    Examples: dog; <br>
-    			(dog AND cat); <br>
-    			(dog AND NOT cat); <br>
-    			(pet OR (dog AND cat))<br>
-    			(NOT pet AND (dog OR cat))<br><br>
-    	
-		<div>
-	        Query:<input type="text"
-	               size="100"
-	               maxlength="255"
-	               name="searchterms">
-	      	<input type="submit" value="Search">
-       	</div> 
-       	
-    </form>
-    ${errormessage}${queryterms}    
-            <div>
-            <c:forEach var="doc" items="${matchingDocuments}">
-                  <div>
-                        ${doc.documentName} can be found here 
-                </div>
-            </c:forEach>
-        </div>
-    </div>
-    </body>
+<body>
+
+	<div class="container">
+		<div class="jumbotron">
+			<div class="text-center">
+				<h2>CT422 Development Project - IR System</h2>
+			</div>
+			<div class="form-inline">
+				<div class="form-group">
+					<form action='startnewtest' method="get">
+						<input type="submit" class="btn btn-info" value="Run New Test">
+					</form>
+				</div>
+				<div class="form-group">
+					<form action='bm25rankedsearch' method="get">
+						<input type="submit" class="btn btn-info" value="BM25 Search">
+					</form>
+				</div>
+				<div class="form-group">
+					<form action='rankedsearch' method="get">
+						<input type="submit" class="btn btn-info"
+							value="Vector Space Search">
+					</form>
+				</div>
+				<div class="form-group">
+					<form action='phrasesearch' method="get">
+						<input type="submit" class="btn btn-info" value="Phrase Search">
+					</form>
+				</div>
+				<div class="form-group">
+					<form action='booleansearch' method="get">
+						<input type="submit" class="btn btn-info" value="Boolean Search">
+					</form>
+				</div>
+			</div>
+			<br> <br> <br>
+			<form action='booleansearch' method="post">
+				Boolean Search:<br> Examples: dog; <br> (dog AND cat); <br>
+				(dog AND NOT cat); <br> (pet OR (dog AND cat))<br> (NOT
+				pet AND (dog OR cat))<br>
+				<br>
+				<br> <br>
+				<div>
+					Query:<input type="text" size="100" maxlength="255"
+						name="searchterms">
+					<button type="submit" class="btn btn-success">Search</button>
+				</div>
+			</form>
+			<h3>Ranked Results</h3>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Rank</th>
+						<th>Document Id</th>
+						<th>Score</th>
+					</tr>
+				</thead>
+				<tbody>
+					<c:forEach var="doc" items="${matchingDocuments}" varStatus="loop">
+						<tr>
+							<td>${loop.index +1}</td>
+							<td>${doc.documentId}</td>
+						</tr>
+					</c:forEach>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
 </html>

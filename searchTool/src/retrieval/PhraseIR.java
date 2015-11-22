@@ -6,6 +6,8 @@
 package retrieval;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import datastructures.AVLTree;
@@ -108,9 +110,22 @@ public class PhraseIR {
 				relevantDocs.add(postingslist.get(y-1).get(x).getDocument());
 			}
 			commonPositions.clear();
-		}		
+		}	
+		
+		Collections.sort(relevantDocs, new Comparator<Document>() {
+			@Override
+			public int compare(final Document doc1, final Document doc2) {
+				return doc1.getDocumentScore().compareTo(doc2.getDocumentScore());
+			}
+		});
+		Collections.reverse(relevantDocs);
+		
+		
 		return relevantDocs;
 	}
+	
+	
+	
 	
 	private Posting copyPosting(Posting posting){
 		Posting copy = new Posting();
