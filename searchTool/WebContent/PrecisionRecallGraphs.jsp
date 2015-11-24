@@ -133,7 +133,6 @@ window.onload = function() {
 								<button type="submit" class="btn btn-success">Next</button>
 							</form>
 						</div>
-
 					</div>
 					<h3>Ranked Results</h3>
 

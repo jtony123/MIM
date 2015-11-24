@@ -14,10 +14,8 @@
 	href="http://css-spinners.com/css/spinner/whirly.css" type="text/css">
 <title>PR Tests</title>
 
-<!--   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> -->
 <script
 	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-<!-- <script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>  -->
 <script type="text/javascript" src="js/jquery.canvasjs.min.js"></script>
 <script type="text/javascript"
 	src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
@@ -31,11 +29,7 @@
 				<h2>CT422 Development Project - IR System</h2>
 			</div>
 			<br> <br>
-			<div class="text-center">
-				You must enter the full directory path to where the test files are
-				located.<br> This directory must contain only three files with
-				the following extensions<br>
-			</div>
+
 			<table class="table table-bordered">
 				<tr>
 					<td>The collection of documents</td>
@@ -55,14 +49,32 @@
 			</table>
 			<br> <br>
 
-			<form action='testcollection' method="post">
-				<div>
-					Enter path to test collection (Eg. C:\\MyFiles\\Folder): <input
-						type="text" size="50" maxlength="255" name="path"> <input
-						type="submit" class="btn btn-success" value="Run Test"
-						style="width: 100px;" onclick="$('#loading').show();" />
-				</div>
-			</form>
+			<div class="form-inline">
+				<form action="upload" method="post" enctype="multipart/form-data">
+					<div class="form-group">
+						.ALL file<input type="file" name="allfile" />
+					</div>
+					<div class="form-group">
+						.QRY file<input type="file" name="qryfile" />
+					</div>
+					<div class="form-group">
+						.REL file<input type="file" name="relfile" />
+					</div>
+					<div class="form-group">
+						<input type="submit" class="btn btn-success" value="Run Test"
+							style="width: 100px;" onclick="$('#loading').show();" />
+					</div>
+				</form>
+			</div>
+			<br><br><br>
+
+			<!-- 			<form action='testcollection' method="post"> -->
+			<!-- 				<div> -->
+			<!-- 					Enter path to test collection (Eg. C:\\MyFiles\\Folder):  -->
+			<!-- 					<input type="text" size="50" maxlength="255" name="path"> -->
+			<!-- 					<input type="submit" class="btn btn-success" value="Run Test" style="width: 100px;" onclick="$('#loading').show();" /> -->
+			<!-- 				</div> -->
+			<!-- 			</form> -->
 			<table>
 				<tbody>
 					<tr>
@@ -70,8 +82,9 @@
 							with terms being stemmed and all punctuation removed. The system
 							will build an inverted index for all terms excluding stop words,
 							contained across the collection.<br> When the IR system is
-							built, each of the queries is submitted to the system, and the
-							document set returned is then evaluated for precision and recall.
+							built, each of the queries is submitted to the system, and precision 
+							recall graphs generated for the documents returned for each
+							query.
 						</td>
 						<td align="center" valign="middle">
 							<div id="loading" style="display: none;">
