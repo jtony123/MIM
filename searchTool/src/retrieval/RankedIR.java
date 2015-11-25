@@ -1,12 +1,9 @@
-/**
- * 
- */
+
 package retrieval;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 
 import datastructures.AVLTree;
 import datastructures.BinaryNodeInterface;
@@ -17,7 +14,7 @@ import fileprocessor.FilesProcessor;
 /**
  * @author Anthony Jackson
  * @id 11170365
- *
+ *	4BCT
  */
 public class RankedIR {
 

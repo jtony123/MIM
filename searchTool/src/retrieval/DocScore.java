@@ -1,13 +1,12 @@
-/**
- * 
- */
+
 package retrieval;
 
 /**
  * @author Anthony Jackson
  * @id 11170365
- *
+ *	4BCT
  */
+
 public class DocScore {
 
 	private int docId;

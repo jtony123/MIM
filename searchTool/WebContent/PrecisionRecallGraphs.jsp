@@ -3,6 +3,13 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
+<%-- 
+
+@author Anthony Jackson
+@id 11170365
+4BCT
+ 
+--%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -34,6 +41,14 @@ window.onload = function() {
 			maximum:100,
 			
 		}, 
+		axisY2: { 
+			title: "Interpolated Precision", 
+			includeZero: true, 
+			labelFontColor: "#C24642",
+	        lineColor: "#C24642",
+	        lineThickness: 5,
+	        maximum:100,
+			},
 		axisX: { 
 			title: "Recall",
 			interval: 10, 
@@ -48,6 +63,16 @@ window.onload = function() {
 			dataPoints: [ 
 			             
 			      <c:forEach items="${precisionList}" var="pr">
+                     {x: parseInt("${pr.rec}"), y: parseInt("${pr.prec}")},
+                  </c:forEach>      
+			] 
+		},		
+		{ 
+			type: "line",
+			toolTipContent: "{y}%",
+			dataPoints: [ 
+			             
+			      <c:forEach items="${interPrecisionList}" var="pr">
                      {x: parseInt("${pr.rec}"), y: parseInt("${pr.prec}")},
                   </c:forEach>      
 			] 
@@ -103,9 +128,8 @@ window.onload = function() {
 						name="" value="${IndexBuildTime}ms">
 				</div>
 				<div class="form-group">
-				Time to run Queries Test
-					<input type="text" class="form-control" name=""
-						value="${TestQueryTime}ms">
+					Time to run Queries Test <input type="text" class="form-control"
+						name="" value="${TestQueryTime}ms">
 				</div>
 			</div>
 			<br> <br> <br>
@@ -113,7 +137,7 @@ window.onload = function() {
 
 			<div class="row">
 				<div class="col-sm-4">
-					
+
 					<div class="form-inline">
 						<div class="form-group">
 							<form action='prevqueryprecisionrecall' method="post">

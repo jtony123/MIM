@@ -1,13 +1,16 @@
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
+<%-- 
+
+@author Anthony Jackson
+@id 11170365
+4BCT
+ 
+--%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<!--   <meta name="viewport" content="width=device-width, initial-scale=1"> -->
 <link rel="stylesheet"
 	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <link rel="stylesheet"
@@ -32,8 +35,8 @@
 
 			<table class="table table-bordered">
 				<tr>
-					<td>The collection of documents</td>
-					<td>*.ALL</td>
+					<td>The collection of documents all within one file</td>
+					<td>*.ALL</td>					
 				</tr>
 				<tr>
 					<td>The file with the queries</td>
@@ -47,6 +50,7 @@
 				</tr>
 
 			</table>
+			File structure/formatting must be similar to the MED collection.
 			<br> <br>
 
 			<div class="form-inline">
@@ -66,15 +70,9 @@
 					</div>
 				</form>
 			</div>
-			<br><br><br>
-
-			<!-- 			<form action='testcollection' method="post"> -->
-			<!-- 				<div> -->
-			<!-- 					Enter path to test collection (Eg. C:\\MyFiles\\Folder):  -->
-			<!-- 					<input type="text" size="50" maxlength="255" name="path"> -->
-			<!-- 					<input type="submit" class="btn btn-success" value="Run Test" style="width: 100px;" onclick="$('#loading').show();" /> -->
-			<!-- 				</div> -->
-			<!-- 			</form> -->
+			<br>
+			<br>
+			<br>
 			<table>
 				<tbody>
 					<tr>
@@ -82,9 +80,13 @@
 							with terms being stemmed and all punctuation removed. The system
 							will build an inverted index for all terms excluding stop words,
 							contained across the collection.<br> When the IR system is
-							built, each of the queries is submitted to the system, and precision 
-							recall graphs generated for the documents returned for each
-							query.
+							built, each of the queries is submitted to the system, and
+							precision recall graphs generated for the documents returned for
+							each query.<br> Once the test is complete, the user is free
+							to submit queries manually to the system. <br>
+							Four search
+							implementations are supported - Simple Vector Space; BM25
+							Ranking; Phrase Search; Boolean Search
 						</td>
 						<td align="center" valign="middle">
 							<div id="loading" style="display: none;">

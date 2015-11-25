@@ -1,8 +1,4 @@
-/**
- * @author Anthony Jackson
- * @id 11170365
- *
- */
+
 package retrieval;
 
 import java.util.ArrayList;
@@ -16,6 +12,11 @@ import datastructures.Posting;
 import fileprocessor.Document;
 import fileprocessor.FilesProcessor;
 
+/**
+ * @author Anthony Jackson
+ * @id 11170365
+ *	4BCT
+ */
 
 public class PhraseIR {
 	

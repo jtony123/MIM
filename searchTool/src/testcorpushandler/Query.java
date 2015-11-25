@@ -2,14 +2,11 @@ package testcorpushandler;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 
- */
 
 /**
  * @author Anthony Jackson
  * @id 11170365
- *
+ *	4BCT
  */
 public class Query {
 

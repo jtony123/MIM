@@ -10,6 +10,12 @@ import datastructures.AVLTree;
 import datastructures.BinaryNodeInterface;
 import datastructures.Posting;
 
+/**
+ * @author Anthony Jackson
+ * @id 11170365
+ *	4BCT
+ */
+
 public class FilesProcessor {
 	
 	

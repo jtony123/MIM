@@ -1,17 +1,11 @@
 package servlet;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -28,17 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.apache.tomcat.util.http.fileupload.RequestContext;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletRequestContext;
-
 import datastructures.AVLTree;
-import datastructures.BinaryNodeInterface;
-import datastructures.Posting;
 import fileprocessor.Document;
 import fileprocessor.FilesProcessor;
 import fileprocessor.Stopwords;
@@ -51,19 +35,18 @@ import testcorpushandler.Query;
 import testcorpushandler.QueryRelevanceBuilder;
 
 /**
- * Servlet implementation class ControllerServlet
- * 
- * 
-public class FileUploadServlet extends HttpServlet {
+ * @author Anthony Jackson
+ * @id 11170365
+ *	4BCT
+ */
 
-    private final static Logger LOGGER = 
-            Logger.getLogger(FileUploadServlet.class.getCanonicalName());
- * 
+/**
+ * Servlet implementation class ControllerServlet
  * 
  */
 @WebServlet(name = "/ControllerServlet",
 loadOnStartup = 1,
-urlPatterns = {"/testcollection",
+urlPatterns = {"/upload",
 				"/booleansearch",
 				"/rankedsearch",
 				"/phrasesearch",
@@ -71,27 +54,23 @@ urlPatterns = {"/testcollection",
 				"/bm25",
 				"/startnewtest",
 				"/nextqueryprecisionrecall",
-				"/prevqueryprecisionrecall",
-				"/upload"})
+				"/prevqueryprecisionrecall"
+				})
 @MultipartConfig
 public class ControllerServlet extends HttpServlet {
+	
 	private static final long serialVersionUID = 1L;
     private final static Logger LOGGER = 
             Logger.getLogger(ControllerServlet.class.getCanonicalName());
 
-	public static String repoUrl = "C:\\a_files_repository";
-	//public static String repoUrl = "C:\\aa_files_repository\\CranField";
-	//public static String repoUrl = "C:\\a_med\\files";
-	public static String stopwordFile = "C:\\a_stopwords_repository\\stopwords.txt";
-	List<Document> documents;// = new ArrayList<Document>();
-	Map<Integer, Document> documentMap;// = new HashMap<Integer, Document>();
+	List<Document> documents;
+	Map<Integer, Document> documentMap;
 	AVLTree<String> stopwordTree;
 	AVLTree<String> invertedIndex;
 	List<Query> queries;
 	String uploadPath = null;
 
 	List<List<DocScore>> docQryScores = new ArrayList<List<DocScore>>();
-	//public double averageDocumentLength = 0;
 
 	/**
 	 * Default constructor. 
@@ -106,8 +85,6 @@ public class ControllerServlet extends HttpServlet {
 	 */
 	public void init(ServletConfig config) throws ServletException {
 		
-//		uploadPath = config.getServletContext().getRealPath("")
-//			    + File.separator + "upload";
 		uploadPath = config.getServletContext().getRealPath("") + "upload";
 		// creates the directory if it does not exist
 					File uploadDir = new File(uploadPath);
@@ -115,13 +92,8 @@ public class ControllerServlet extends HttpServlet {
 					    uploadDir.mkdir();
 					}
 		// build a balanced tree of stopwords.
-		FilesProcessor filesProcessor = new FilesProcessor();
-		stopwordTree = new Stopwords(stopwordFile).getAvlTree();
-//		invertedIndex = filesProcessor.getInvertedIndex(stopwordTree, repoUrl);
-//		documentMap = filesProcessor.getDocumentMap();
-//		documents = filesProcessor.getDocuments();
-//		invertedIndex.inorderTraverse();
-		// TODO: check if serialised indexer exists, otherwise build it.		
+		stopwordTree = new Stopwords().getAvlTree();
+		//stopwordTree = new Stopwords(stopwordFile).getAvlTree();		
 
 	}
 	
@@ -135,7 +107,7 @@ public class ControllerServlet extends HttpServlet {
 		HttpSession session = request.getSession();
 		session.setAttribute("relevantDocs", null);
 
-		if (userPath.equals("/testcollection")) {
+		if (userPath.equals("/upload")) {
 			url = "/PrecisionRecallTest.jsp";
 		} else if (userPath.equals("/rankedsearch")){
 			url = "/RankedSearchPage.jsp";
@@ -171,17 +143,19 @@ public class ControllerServlet extends HttpServlet {
 		HttpSession session = request.getSession();
 		
 		
-		if (userPath.equals("/booleansearch")) {// *******************  boolean search   ********************
+		if (userPath.equals("/booleansearch")) {
 			
+			String searchTerms = request.getParameter("searchterms");
 			List<Document> matchingDocs = new ArrayList<Document>();
-			BooleanIR booleanIR = new BooleanIR(request.getParameter("searchterms"),invertedIndex, documentMap.size());
+			BooleanIR booleanIR 
+			= new BooleanIR(searchTerms, invertedIndex, documentMap.size());
 				
 			for(Integer i : booleanIR.eval()){
 				matchingDocs.add(documentMap.get(i));
 			}
 			
 			url = "/BooleanSearchPage.jsp";
-			session.setAttribute("queryterms", request.getParameter("searchterms"));
+			session.setAttribute("queryterms", searchTerms);
 			session.setAttribute("matchingDocuments", matchingDocs);
 
 			
@@ -221,117 +195,13 @@ public class ControllerServlet extends HttpServlet {
 			String query = request.getParameter("searchterms"); 
 			resetScores();
 			RankedIR vsIR = new RankedIR();
-			List<Document> relevantDocs = vsIR.getBM25RelevantDocuments(query, invertedIndex);
+			List<Document> relevantDocs = 
+					vsIR.getBM25RelevantDocuments(query, invertedIndex);
 
 			session.setAttribute("relevantDocs", relevantDocs);
 			url = "/BM25RankedSearchPage.jsp";
 			
-			
-			
-//		} else if(userPath.equals("/testcollection")){
-//			// TODO: 
-//			
-//			starttime = System.currentTimeMillis();
-//			String path = request.getParameter("path");		
-//			//String absoluteDiskPath;
-//			if(path.equals("")){
-//				path = getServletContext().getRealPath("\\WEB-INF\\defaultCollection");
-//				//path = request.getParameter("defpath");
-//				//path = "\\defaultCollection";
-//			}
-//			System.out.println("path = "+path);
-//			
-//			if(!path.equals("")){
-//				
-//				File[] files = new File(path).listFiles();
-//				
-//				String all = "";
-//				String qry = "";
-//				String rel = "";
-//				for(int i = 0; i<files.length;++i){
-//					if(files[i].getName().contains("ALL")){
-//						all = "\\"+files[i].getName();
-//					} else if (files[i].getName().contains("QRY")){
-//						qry = "\\"+files[i].getName();
-//					} else if (files[i].getName().contains("REL")){
-//						rel = "\\"+files[i].getName();
-//					}
-//				}
-//				
-//				// build a new inverted Index for this collection				
-//				DocumentBuilder db = new DocumentBuilder(path + all, stopwordTree);
-//				FilesProcessor filesProcessor = new FilesProcessor();
-//				invertedIndex = filesProcessor.getInvertedIndex(db.getDocuments());
-//				documentMap = filesProcessor.getDocumentMap();
-//				documents = filesProcessor.getDocuments();
-//				
-//				invIndexTime = System.currentTimeMillis();
-//				
-//				QueryRelevanceBuilder qrb = new QueryRelevanceBuilder(path + qry, path + rel);
-//				queries = qrb.getQueries();
-//				
-//				// submit each query and note the results
-//				for (Query q: queries){
-//					
-//					resetScores();
-//					
-//					RankedIR vsIR = new RankedIR();
-//					List<Document> relevantDocs = vsIR.getBM25RelevantDocuments(q.getQueryString(), invertedIndex);
-//					
-//					List<DocScore> docQryScore = new ArrayList<DocScore>();
-//					for(Document d : relevantDocs){
-//						String str = String.format("%.2f", d.getDocumentScore());						
-//						DocScore ds = new DocScore(d.getDocumentId(), str);
-//						docQryScore.add(ds);						
-//					}		
-//					docQryScores.add(docQryScore);
-//					
-//					// now check the returned docs against the relevant docs
-//			         int numMatching = 0;
-//			         List<Integer> deemedRelevant = new ArrayList<Integer>();
-//			         deemedRelevant.addAll(q.getRelevantDocs());
-//			         int counter = 1;
-//			         for(Document d : relevantDocs){
-//			        	 if(!deemedRelevant.isEmpty()){
-//			        		 if(deemedRelevant.contains(d.getDocumentId())){
-//			        			 numMatching++;
-//				        		 // here we populate the precision and recall figures for this query
-//				        		 double prec = ((double)numMatching)/counter;
-//				        		 q.addToPrecisionList((int)(prec*100));
-//				        		 double rec = ((double)numMatching)/q.getRelevantDocs().size();
-//				        		 q.addToRecallList((int)(rec*100));
-//				        		 deemedRelevant.remove(d.getDocumentId());
-//				        		 
-//				        	 } else {
-//				        		 double prec = ((double)numMatching)/counter;
-//				        		 q.addToPrecisionList((int)(prec*100));
-//				        		 double rec = ((double)numMatching)/q.getRelevantDocs().size();
-//				        		 q.addToRecallList((int)(rec*100));
-//			        		 }
-//			        	 }
-//			        	++counter;
-//			         } 
-//				}
-//				
-//			} else {
-//				System.out.println("failed "+path);
-//			}
-//			
-//			List<Map<String, Integer>> precisionList 
-//				= getPrecisionRecallResults(0);
-//			
-//			qryTestTime = System.currentTimeMillis();
-//
-//			long buildIndexTime = invIndexTime - starttime;
-//			long testQueryTime = qryTestTime - invIndexTime;
-//			
-//			session.setAttribute("IndexBuildTime", buildIndexTime);
-//			session.setAttribute("TestQueryTime", testQueryTime);
-//			session.setAttribute("queryNum", 1);
-//			session.setAttribute("precisionList", precisionList);
-//			session.setAttribute("docQryScores", docQryScores.get(0));
-//			
-//			url = "/PrecisionRecallGraphs.jsp";
+
 			
 		} else if(userPath.equals("/nextqueryprecisionrecall")){
 			
@@ -344,12 +214,18 @@ public class ControllerServlet extends HttpServlet {
 			
 			List<Map<String, Integer>> precisionList 
 				= getPrecisionRecallResults(qNum);
+			List<Map<String, Integer>> interPrecisionList
+			= getInterpolatedPrecision(qNum);
 
 			session.setAttribute("queryNum", qNum);
 			session.setAttribute("precisionList", precisionList);
+			session.setAttribute("interPrecisionList", interPrecisionList);
 			session.setAttribute("docQryScores", docQryScores.get(qNum));
 			
 			url = "/PrecisionRecallGraphs.jsp";
+			
+			
+			
 			
 		} else if(userPath.equals("/prevqueryprecisionrecall")){
 			
@@ -360,9 +236,11 @@ public class ControllerServlet extends HttpServlet {
 				qNum = 0;
 			}			
 			List<Map<String, Integer>> precisionList = getPrecisionRecallResults(qNum);
+			List<Map<String, Integer>> interPrecisionList = getInterpolatedPrecision(qNum);
 			
 			session.setAttribute("queryNum", qNum);
 			session.setAttribute("precisionList", precisionList);
+			session.setAttribute("interPrecisionList", interPrecisionList);
 			session.setAttribute("docQryScores", docQryScores.get(qNum));
 						
 			url = "/PrecisionRecallGraphs.jsp";
@@ -373,7 +251,6 @@ public class ControllerServlet extends HttpServlet {
 		} else if(userPath.equals("/upload")){			
 			     
 			starttime = System.currentTimeMillis();
-//			long qryTestTime = 0;
 			
 			final Part allPart = request.getPart("allfile");			     
 			File all = saveFile(allPart);
@@ -442,6 +319,8 @@ public class ControllerServlet extends HttpServlet {
 
 			List<Map<String, Integer>> precisionList 
 			= getPrecisionRecallResults(0);
+							
+			List<Map<String, Integer>> interPrecisionList = getInterpolatedPrecision(0);
 
 			qryTestTime = System.currentTimeMillis();
 
@@ -452,6 +331,7 @@ public class ControllerServlet extends HttpServlet {
 			session.setAttribute("TestQueryTime", testQueryTime);
 			session.setAttribute("queryNum", 1);
 			session.setAttribute("precisionList", precisionList);
+			session.setAttribute("interPrecisionList", interPrecisionList);
 			session.setAttribute("docQryScores", docQryScores.get(0));
 				
 				url = "/PrecisionRecallGraphs.jsp";
@@ -478,6 +358,68 @@ public class ControllerServlet extends HttpServlet {
 		}		
 		return precisionList;		
 	}
+	
+	
+	private ArrayList<Map<String, Integer>> getInterpolatedPrecision(int qNum){
+		
+		ArrayList<Map<String, Integer>> interPrecisionList = new ArrayList<>();
+		int max =0;
+		int index = 0;
+		int size = queries.get(qNum).getPrecisionList().size();
+		List<Integer> remaining = new ArrayList<Integer>();
+		
+		for(Integer i : queries.get(qNum).getPrecisionList()){
+			remaining.add(i);
+			if(i>max) {
+				max=i;
+				index = remaining.lastIndexOf(i);
+			}
+		}
+		
+		Map<String, Integer> precValue1 = new HashMap<String, Integer>();
+		precValue1.put("rec", 0);
+		precValue1.put("prec", max);
+		interPrecisionList.add(precValue1);
+		
+		int prevRecall = 0;
+		
+		while (!remaining.isEmpty()){
+			max =0;
+			index = 0;
+			// get max value precision value, and note its index and its recall			
+			
+			for(int r : remaining){
+				if(r>max) {
+					max=r;
+					index = remaining.lastIndexOf(r);
+				}				
+			}
+			int diff = remaining.size() - index;
+			System.out.println("diff = " + diff + ", size = " + size + " subed = "+ (size-diff));
+			
+			Map<String, Integer> precValue = new HashMap<String, Integer>();
+			precValue.put("rec", prevRecall);
+			precValue.put("prec", queries.get(qNum).getPrecisionList().get(size-diff));
+			interPrecisionList.add(precValue);				
+			
+			precValue = new HashMap<String, Integer>();
+			prevRecall = queries.get(qNum).getRecallList().get(size-diff);
+			precValue.put("rec", queries.get(qNum).getRecallList().get(size-diff));
+			precValue.put("prec", queries.get(qNum).getPrecisionList().get(size-diff));
+			interPrecisionList.add(precValue);
+			
+			for(int i = 0; i<index;++i){
+				remaining.remove(0);
+			}
+			if(!remaining.isEmpty())remaining.remove(0);
+		}		
+		return interPrecisionList;	
+		
+	}
+	
+	
+	
+	
 	
 	private void resetScores(){
 		for (Document doc : documents){
@@ -508,20 +450,15 @@ public class ControllerServlet extends HttpServlet {
 	         out = new FileOutputStream(qry = new File(uploadPath + File.separator
 	                 + fileName));
 	         filecontent = filePart.getInputStream();
-	         //qry = stream2file(filecontent);
 	         int read = 0;
 	         final byte[] bytes = new byte[1024];
 
 	         while ((read = filecontent.read(bytes)) != -1) {
 	             out.write(bytes, 0, read);
 	         }
-//	         writer.println("New file " + fileName + " created at " + path);
-//	         LOGGER.log(Level.INFO, "File{0}being uploaded to {1}", 
-//	                 new Object[]{fileName, path});
-	     } catch (Exception fne) {
 
-	         LOGGER.log(Level.SEVERE, "Problems during file upload. Error: {0}", 
-	                 new Object[]{fne.getMessage()});
+	     } catch (Exception e) {
+
 	     } finally {
 
 	         if (filecontent != null) {
@@ -544,12 +481,4 @@ public class ControllerServlet extends HttpServlet {
 	     return qry;
 	}
 	
-//    public File stream2file (InputStream in) throws IOException {
-//        final File tempFile = File.createTempFile("temp", ".tmp");
-//        //tempFile.deleteOnExit();
-//        try (FileOutputStream out = new FileOutputStream(tempFile)) {
-//            IOUtils.copy(in, out);
-//        }
-//        return tempFile;
-//    }
 }
