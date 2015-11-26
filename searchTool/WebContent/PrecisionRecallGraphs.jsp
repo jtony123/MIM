@@ -90,46 +90,47 @@ window.onload = function() {
 			<div class="text-center">
 				<h2>CT422 Development Project - IR System</h2>
 			</div>
-			<div class="form-inline">
-				<div class="form-group">
-					<form action='startnewtest' method="get">
-						<input type="submit" class="btn btn-info" value="Run New Test">
-					</form>
-				</div>
-				<div class="form-group">
-					<form action='bm25rankedsearch' method="get">
-						<input type="submit" class="btn btn-info" value="BM25 Search">
-					</form>
-				</div>
-				<div class="form-group">
-					<form action='rankedsearch' method="get">
-						<input type="submit" class="btn btn-info"
-							value="Vector Space Search">
-					</form>
-				</div>
-				<div class="form-group">
-					<form action='phrasesearch' method="get">
-						<input type="submit" class="btn btn-info" value="Phrase Search">
-					</form>
-				</div>
-				<div class="form-group">
-					<form action='booleansearch' method="get">
-						<input type="submit" class="btn btn-info" value="Boolean Search">
-					</form>
+			<div class="text-center">
+				<div class="form-inline">
+					<div class="form-group">
+						<form action='startnewtest' method="get">
+							<input type="submit" class="btn btn-info" value="Run New Test">
+						</form>
+					</div>
+					<div class="form-group">
+						<form action='bm25rankedsearch' method="get">
+							<input type="submit" class="btn btn-info" value="BM25 Search">
+						</form>
+					</div>
+					<div class="form-group">
+						<form action='rankedsearch' method="get">
+							<input type="submit" class="btn btn-info"
+								value="Vector Space Search">
+						</form>
+					</div>
+					<div class="form-group">
+						<form action='phrasesearch' method="get">
+							<input type="submit" class="btn btn-info" value="Phrase Search">
+						</form>
+					</div>
+					<div class="form-group">
+						<form action='booleansearch' method="get">
+							<input type="submit" class="btn btn-info" value="Boolean Search">
+						</form>
+					</div>
 				</div>
 			</div>
 			<br>
-			<div class="form-inline">
-				<div class="form-group">
-					<h3>Performance Figures</h3>
-				</div>
-				<div class="form-group">
-					Time to build IR system <input type="text" class="form-control"
-						name="" value="${IndexBuildTime}ms">
-				</div>
-				<div class="form-group">
-					Time to run Queries Test <input type="text" class="form-control"
-						name="" value="${TestQueryTime}ms">
+			<div class="text-center">
+				<div class="form-inline">
+					<div class="form-group">
+						Time to build IR system <input type="text" class="form-control"
+							name="" value="${IndexBuildTime}ms">
+					</div>
+					<div class="form-group">
+						Time to run ${numqrys} queries<input type="text"
+							class="form-control" name="" value="${TestQueryTime}ms">
+					</div>
 				</div>
 			</div>
 			<br> <br> <br>

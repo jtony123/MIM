@@ -207,8 +207,9 @@ public class ControllerServlet extends HttpServlet {
 			
 			String queryNum = request.getParameter("qrynumber");
 			System.out.println("queryNum = "+queryNum);
-			int qNum = 1 + Integer.parseInt(queryNum);
-			if(qNum > queries.size()){
+			int qNum = Integer.parseInt(queryNum);
+			//qNum++;
+			if(qNum >= queries.size()){
 				qNum = qNum-1;
 			}
 			
@@ -217,7 +218,7 @@ public class ControllerServlet extends HttpServlet {
 			List<Map<String, Integer>> interPrecisionList
 			= getInterpolatedPrecision(qNum);
 
-			session.setAttribute("queryNum", qNum);
+			session.setAttribute("queryNum", qNum + 1);
 			session.setAttribute("precisionList", precisionList);
 			session.setAttribute("interPrecisionList", interPrecisionList);
 			session.setAttribute("docQryScores", docQryScores.get(qNum));
@@ -232,13 +233,14 @@ public class ControllerServlet extends HttpServlet {
 			String queryNum = request.getParameter("qrynumber");
 			System.out.println("queryNum = "+queryNum);
 			int qNum = Integer.parseInt(queryNum) - 1;
+			qNum--;
 			if(qNum < 0){
 				qNum = 0;
 			}			
 			List<Map<String, Integer>> precisionList = getPrecisionRecallResults(qNum);
 			List<Map<String, Integer>> interPrecisionList = getInterpolatedPrecision(qNum);
 			
-			session.setAttribute("queryNum", qNum);
+			session.setAttribute("queryNum", qNum +1);
 			session.setAttribute("precisionList", precisionList);
 			session.setAttribute("interPrecisionList", interPrecisionList);
 			session.setAttribute("docQryScores", docQryScores.get(qNum));
@@ -265,6 +267,7 @@ public class ControllerServlet extends HttpServlet {
 			DocumentBuilder db = new DocumentBuilder(all.getPath(), stopwordTree);
 			FilesProcessor filesProcessor = new FilesProcessor();
 			invertedIndex = filesProcessor.getInvertedIndex(db.getDocuments());
+			//invertedIndex.inorderTraverse();
 			documentMap = filesProcessor.getDocumentMap();
 			documents = filesProcessor.getDocuments();
 
@@ -333,6 +336,9 @@ public class ControllerServlet extends HttpServlet {
 			session.setAttribute("precisionList", precisionList);
 			session.setAttribute("interPrecisionList", interPrecisionList);
 			session.setAttribute("docQryScores", docQryScores.get(0));
+			session.setAttribute("numqrys", queries.size());
+			
+			
 				
 				url = "/PrecisionRecallGraphs.jsp";
 		}
@@ -395,7 +401,7 @@ public class ControllerServlet extends HttpServlet {
 				}				
 			}
 			int diff = remaining.size() - index;
-			System.out.println("diff = " + diff + ", size = " + size + " subed = "+ (size-diff));
+			//System.out.println("diff = " + diff + ", size = " + size + " subed = "+ (size-diff));
 			
 			Map<String, Integer> precValue = new HashMap<String, Integer>();
 			precValue.put("rec", prevRecall);

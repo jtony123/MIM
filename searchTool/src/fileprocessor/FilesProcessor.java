@@ -40,13 +40,6 @@ public class FilesProcessor {
 	}
 
 
-//	private void getInvertedIndex(AVLTree<String> stopwordTree, String repo){
-//		
-//	}
-	
-	
-
-
 
 	public AVLTree<String> getInvertedIndex(AVLTree<String> stopwordTree, String repo){
 						
@@ -125,27 +118,6 @@ public class FilesProcessor {
 		return invertedIndex;	
 	}
 	
-	
-	
-
-	
-//	public String[] processQuery(String query){
-//		
-//		String[] terms = query.split(",|'|\\.|\\s");
-//		for(int i=0;i<terms.length;++i){			
-//			// Singularize and stem the words
-//			Inflector inflector = new Inflector();	
-//			Stemmer stemmer = new Stemmer();
-//			//put everything in lowercase
-//			terms[i] = terms[i].toLowerCase();
-//			
-//			String singularForm = inflector.singularize(terms[i]);
-//			stemmer.add(singularForm);
-//			terms[i] = stemmer.stem().toString();
-//			stemmer.clear();			
-//		}
-//		return terms;
-//	}
 	
 	public String processTerm(String term){
 		

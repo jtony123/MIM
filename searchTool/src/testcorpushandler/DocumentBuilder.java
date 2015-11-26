@@ -49,31 +49,31 @@ public class DocumentBuilder {
 		StringBuilder sb = new StringBuilder();
 		Document doc = new Document();
 		doc.setDocumentId(1);
+		String line = reader.readLine();
 		
-		for (String line; (line = reader.readLine()) != null;) {
+		
+		for (; (line = reader.readLine()) != null;) {
 			if (line.startsWith(".I")) {
 				// this is the start of the next document
-				String filename = line.substring(3);
-				filename.trim();
 
-				int id = Integer.parseInt(filename);
-				doc.setDocumentId(id);
 				doc.setFullText(sb.toString());
 
-				String[] terms = doc.getFullText().split(",|'|\\.|\\s");
+				String[] terms = doc.getFullText().split(",|'|\\.|\\s+");
 
 				for (int i = 0; i < terms.length; ++i) {
-					// Singularize and stem the words
-					Inflector inflector = new Inflector();
-					Stemmer stemmer = new Stemmer();
-					// put everything in lowercase
-					terms[i] = terms[i].toLowerCase();
+					if(!terms[i].equals("")){
+						// Singularize and stem the words
+						Inflector inflector = new Inflector();
+						Stemmer stemmer = new Stemmer();
+						// put everything in lowercase
+						terms[i] = terms[i].toLowerCase();
 
-					if (!stopwordTree.contains(terms[i])) {
-						String singularForm = inflector.singularize(terms[i]);
-						stemmer.add(singularForm);
-						doc.addToken(stemmer.stem().toString());
-						stemmer.clear();
+						if (!stopwordTree.contains(terms[i])) {
+							String singularForm = inflector.singularize(terms[i]);
+							stemmer.add(singularForm);
+							doc.addToken(stemmer.stem().toString());
+							stemmer.clear();
+						}
 					}
 				}
 
@@ -81,12 +81,40 @@ public class DocumentBuilder {
 
 				sb = new StringBuilder();
 				doc = new Document();
+				String filename = line.substring(3);
+				filename.trim();
+
+				int id = Integer.parseInt(filename);
+				doc.setDocumentId(id);
 			} else if (line.startsWith(".W")) {
 				// skip this line
 			} else {
 				sb.append(line + " ");
 
 			}
+		}
+		
+		doc.setFullText(sb.toString());
+
+		String[] terms = doc.getFullText().split(",|'|\\.|\\s+");
+
+		for (int i = 0; i < terms.length; ++i) {
+			
+			if(!terms[i].equals("")){
+				// Singularize and stem the words
+				Inflector inflector = new Inflector();
+				Stemmer stemmer = new Stemmer();
+				// put everything in lowercase
+				terms[i] = terms[i].toLowerCase();
+
+				if (!stopwordTree.contains(terms[i])) {
+					String singularForm = inflector.singularize(terms[i]);
+					stemmer.add(singularForm);
+					doc.addToken(stemmer.stem().toString());
+					stemmer.clear();
+				}
+			}
+
 		}
 		documents.add(doc);
 

@@ -65,12 +65,27 @@ public class QueryRelevanceBuilder {
 			qNum = Integer.parseInt(lineTokens[0]);
 			if (qNum == ctr) {
 				// when the number is the same
-				templist.add(Integer.parseInt(lineTokens[2]));
+				if(Integer.parseInt(lineTokens[1])==0){
+					// handling med type rel files
+					templist.add(Integer.parseInt(lineTokens[2]));
+				} else {
+					// handling cran type rel files
+					templist.add(Integer.parseInt(lineTokens[1]));
+				}
+				
+				
+				
 			} else {
 				// when qnum jumps
 				lists.add(templist);
 				templist = new ArrayList<Integer>();
-				templist.add(Integer.parseInt(lineTokens[2]));
+				if(Integer.parseInt(lineTokens[1])==0){
+					// handling med type rel files
+					templist.add(Integer.parseInt(lineTokens[2]));
+				} else {
+					// handling cran type rel files
+					templist.add(Integer.parseInt(lineTokens[1]));
+				}
 				++ctr;
 			}
 		}
