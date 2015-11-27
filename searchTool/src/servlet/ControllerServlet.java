@@ -280,7 +280,9 @@ public class ControllerServlet extends HttpServlet {
 			for (Query q: queries){
 
 				resetScores();
-
+				
+				//System.out.println(q.getQueryNum()+": " + q.getQueryString());
+				
 				RankedIR vsIR = new RankedIR();
 				List<Document> relevantDocs = vsIR.getBM25RelevantDocuments(q.getQueryString(), invertedIndex);
 
